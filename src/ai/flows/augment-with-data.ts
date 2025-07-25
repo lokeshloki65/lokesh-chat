@@ -27,34 +27,19 @@ export async function augmentChatbotWithData(input: AugmentChatbotWithDataInput)
 
 const shouldIncludeDataTool = ai.defineTool({
   name: 'shouldIncludeData',
-  description: 'Determine whether to include external data based on user query.',
+  description: 'Determine whether to include external data based on user query. For example, if the user asks for links, documents, or external information.',
   inputSchema: z.object({
     query: z.string().describe('The user query.'),
   }),
   outputSchema: z.boolean().describe('Whether to include external data (true) or not (false).'),
 },
 async (input) => {
-    // This can call any typescript function.
-    // For now, always return false.
-    return false;
+    // This is a placeholder. A real implementation would have logic
+    // to determine if external data is needed.
+    return /link|document|source/i.test(input.query);
   }
 );
 
-const augmentChatbotWithDataPrompt = ai.definePrompt({
-  name: 'augmentChatbotWithDataPrompt',
-  input: {schema: AugmentChatbotWithDataInputSchema},
-  output: {schema: AugmentChatbotWithDataOutputSchema},
-  tools: [shouldIncludeDataTool],
-  prompt: `You are a helpful chatbot.  Answer the user's query to the best of your ability.
-
-  User Query: {{{query}}}
-
-  {{#if (shouldIncludeData query)}}
-  You have determined that including external data is necessary to provide a comprehensive answer.
-  Include relevant links or documents to support your response.
-  {{/if}}
-  `,
-});
 
 const augmentChatbotWithDataFlow = ai.defineFlow(
   {
@@ -62,8 +47,28 @@ const augmentChatbotWithDataFlow = ai.defineFlow(
     inputSchema: AugmentChatbotWithDataInputSchema,
     outputSchema: AugmentChatbotWithDataOutputSchema,
   },
-  async input => {
-    const {output} = await augmentChatbotWithDataPrompt(input);
-    return output!;
+  async (input) => {
+    const llmResponse = await ai.generate({
+      prompt: `You are a helpful chatbot. Answer the user's query to the best of your ability.
+
+      User Query: ${input.query}`,
+      tools: [shouldIncludeDataTool],
+    });
+
+    const toolChoice = llmResponse.choices[0].toolCalls;
+
+    if (toolChoice) {
+      const toolResult = await ai.runTool(toolChoice[0]);
+      if (toolResult.output) {
+        const finalResponse = await ai.generate({
+          prompt: `You are a helpful chatbot. You have determined that including external data is necessary to provide a comprehensive answer. Please include relevant links or documents to support your response to the user's query.
+          
+          User Query: ${input.query}`,
+        });
+        return { augmentedResponse: finalResponse.text };
+      }
+    }
+
+    return { augmentedResponse: llmResponse.text };
   }
 );
