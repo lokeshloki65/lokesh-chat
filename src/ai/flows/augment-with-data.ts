@@ -55,7 +55,7 @@ const augmentChatbotWithDataFlow = ai.defineFlow(
       tools: [shouldIncludeDataTool],
     });
 
-    const toolChoice = llmResponse.choices[0].toolCalls;
+    const toolChoice = llmResponse.choices?.[0]?.toolCalls;
 
     if (toolChoice) {
       const toolResult = await ai.runTool(toolChoice[0]);
