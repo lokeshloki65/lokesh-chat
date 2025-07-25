@@ -92,7 +92,7 @@ export function ChatInterface() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Gemini Chat Response',
+          title: 'lokesh chatbot Response',
           text: content,
         });
       } catch (error) {
@@ -116,7 +116,7 @@ export function ChatInterface() {
     <div className="flex flex-col h-full">
       <header className="flex items-center justify-between p-4 border-b shrink-0">
         <h1 className="text-xl md:text-2xl font-headline font-bold text-primary">
-          Gemini Chat Companion
+          lokesh chatbot
         </h1>
         <Button variant="ghost" size="sm" onClick={handleNewChat}>
           <PlusCircle className="mr-2 h-4 w-4" />
