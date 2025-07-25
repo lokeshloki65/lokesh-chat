@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { BrainCircuit, Copy, Loader2, PlusCircle, Send, Share2, User } from "lucide-react";
+import { BrainCircuit, Copy, Loader2, PlusCircle, Send, Share2, Trash2, User } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 type Message = {
@@ -17,12 +17,43 @@ type Message = {
   content: string;
 };
 
+const CHAT_HISTORY_KEY = "lokesh_chatbot_history";
+
 export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    try {
+      const savedHistory = localStorage.getItem(CHAT_HISTORY_KEY);
+      if (savedHistory) {
+        setMessages(JSON.parse(savedHistory));
+      }
+    } catch (error) {
+      console.error("Failed to load chat history:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not load chat history.",
+      });
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    try {
+      if (messages.length > 0) {
+        localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(messages));
+      } else {
+        localStorage.removeItem(CHAT_HISTORY_KEY);
+      }
+    } catch (error) {
+        console.error("Failed to save chat history:", error);
+    }
+  }, [messages]);
+
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -35,6 +66,14 @@ export function ChatInterface() {
     toast({
         title: "New chat started",
         description: "Your conversation history has been cleared.",
+      });
+  };
+  
+  const handleClearHistory = () => {
+    setMessages([]);
+    toast({
+        title: "Chat history cleared",
+        description: "Your conversation history has been permanently deleted.",
       });
   };
 
@@ -118,10 +157,16 @@ export function ChatInterface() {
         <h1 className="text-xl md:text-2xl font-headline font-bold text-primary">
           lokesh chatbot
         </h1>
-        <Button variant="ghost" size="sm" onClick={handleNewChat}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          New Chat
-        </Button>
+        <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={handleNewChat}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              New Chat
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleClearHistory} disabled={messages.length === 0}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Clear History
+            </Button>
+        </div>
       </header>
       <main className="flex-1 overflow-y-auto">
         <ScrollArea className="h-full">
