@@ -22,11 +22,11 @@ export function ChatInterface() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const scrollAreaViewportRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (scrollAreaViewportRef.current) {
-      scrollAreaViewportRef.current.scrollTop = scrollAreaViewportRef.current.scrollHeight;
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
   }, [messages]);
   
@@ -124,8 +124,8 @@ export function ChatInterface() {
         </Button>
       </header>
       <main className="flex-1 overflow-y-auto">
-        <ScrollArea className="h-full" viewportRef={scrollAreaViewportRef}>
-          <div className="p-4 md:p-6 space-y-6">
+        <ScrollArea className="h-full">
+          <div className="p-4 md:p-6 space-y-6" ref={scrollAreaRef}>
             {messages.length === 0 && (
                 <div className="text-center text-muted-foreground pt-16">
                     <BrainCircuit className="mx-auto h-12 w-12 mb-4" />
