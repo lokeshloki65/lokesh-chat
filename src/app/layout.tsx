@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'lokesh chatbot',
+  title: 'Lokesh chatbot',
   description: 'An intelligent chat companion powered by Gemini.',
 };
 
